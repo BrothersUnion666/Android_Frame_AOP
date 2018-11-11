@@ -1,20 +1,32 @@
 package com.brother6.android_frame_aop.permission;
 
+import android.Manifest;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.brother6.android_frame_aop.R;
+import com.brother6.aop.PermissionHelper;
+import com.brother6.aop.PermissionInterface;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class PermissionUseActivity extends AppCompatActivity {
+public class PermissionUseActivity extends AppCompatActivity implements PermissionInterface {
 
     List<PhoneBean> phoneDatas = new ArrayList<>();
+    private PermissionHelper mPermissionHelper;
+    /**
+     * 基本权限管理
+     */
+    private final String[] BASIC_PERMISSIONS = new String[]{
+            Manifest.permission.READ_CONTACTS,
+    };
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -28,9 +40,20 @@ public class PermissionUseActivity extends AppCompatActivity {
         tv_read_contact.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                loadPhoneContact();
+                mPermissionHelper = new PermissionHelper(PermissionUseActivity.this,
+                        PermissionUseActivity.this);
+                mPermissionHelper.requestPermissions();
+
             }
         });
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if(mPermissionHelper.requestPermissionsResult(requestCode,permissions,grantResults)){
+            return;
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     private void loadPhoneContact() {
@@ -54,7 +77,7 @@ public class PermissionUseActivity extends AppCompatActivity {
         Cursor cursor = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
                 new String[] { "display_name", "sort_key", "contact_id",
                         "data1" }, null, null, null);
-//        moveToNext方法返回的是一个boolean类型的数据
+//      moveToNext方法返回的是一个boolean类型的数据
         while (cursor.moveToNext()) {
             //读取通讯录的姓名
             String name = cursor.getString(cursor
@@ -76,8 +99,29 @@ public class PermissionUseActivity extends AppCompatActivity {
     }
 
     private void updateContact() {
-        Toast.makeText(this, "dataSize = " + phoneDatas.size(), Toast.LENGTH_LONG);
+        Toast.makeText(this, "dataSize = " + phoneDatas.size(), Toast.LENGTH_LONG).show();
     }
 
 
+    @Override
+    public int getPermissionsRequestCode() {
+        return 1000;
+    }
+
+    @Override
+    public String[] getPermissions() {
+        //TODO 要获的权限
+        return BASIC_PERMISSIONS;
+    }
+
+    @Override
+    public void requestPermissionsSuccess() {
+        loadPhoneContact();
+    }
+
+    @Override
+    public void requestPermissionsFail() {
+        //TODO 请求失败 退出当前界面
+        finish();
+    }
 }
