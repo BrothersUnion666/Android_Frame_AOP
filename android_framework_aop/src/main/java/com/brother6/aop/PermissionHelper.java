@@ -3,19 +3,26 @@ package com.brother6.aop;
 import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
- 
+
+import com.brother6.aop.PermissionInterface;
+import com.brother6.aop.PermissionUtil;
+import com.brother6.aop.parse.permission.PermissionParse;
+
 /**
  * 动态权限帮助类
  * Created by dway on 2018/1/10.
  */
-public class PermissionHelper {
+public class PermissionHelper{
  
     private Activity mActivity;
     private PermissionInterface mPermissionInterface;
+    private PermissionParse parser;
  
-    public PermissionHelper(@NonNull Activity activity, @NonNull PermissionInterface permissionInterface) {
+    public  PermissionHelper(@NonNull Activity activity) {
         mActivity = activity;
-        mPermissionInterface = permissionInterface;
+        parser = new PermissionParse();
+        parser.bind(activity);
+        mPermissionInterface = parser.getPermissionInterface();
     }
  
     /**
@@ -59,5 +66,4 @@ public class PermissionHelper {
         }
         return false;
     }
-    
 }

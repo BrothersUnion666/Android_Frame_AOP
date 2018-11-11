@@ -12,19 +12,20 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.brother6.android_frame_aop.R;
 import com.brother6.aop.PermissionHelper;
-import com.brother6.aop.PermissionInterface;
-
+import com.brother6.aop.anotation.permission.PermissionSuccess;
+import com.brother6.aop.anotation.permission.RequestPermissons;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PermissionUseActivity extends AppCompatActivity implements PermissionInterface {
+public class PermissionUseActivity extends AppCompatActivity {
 
     List<PhoneBean> phoneDatas = new ArrayList<>();
     private PermissionHelper mPermissionHelper;
     /**
      * 基本权限管理
      */
-    private final String[] BASIC_PERMISSIONS = new String[]{
+    @RequestPermissons(requestCode = 1000)
+    public String[] BASIC_PERMISSIONS = new String[]{
             Manifest.permission.READ_CONTACTS,
     };
 
@@ -40,10 +41,8 @@ public class PermissionUseActivity extends AppCompatActivity implements Permissi
         tv_read_contact.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mPermissionHelper = new PermissionHelper(PermissionUseActivity.this,
-                        PermissionUseActivity.this);
+                mPermissionHelper = new PermissionHelper(PermissionUseActivity.this);
                 mPermissionHelper.requestPermissions();
-
             }
         });
     }
@@ -103,23 +102,12 @@ public class PermissionUseActivity extends AppCompatActivity implements Permissi
     }
 
 
-    @Override
-    public int getPermissionsRequestCode() {
-        return 1000;
-    }
-
-    @Override
-    public String[] getPermissions() {
-        //TODO 要获的权限
-        return BASIC_PERMISSIONS;
-    }
-
-    @Override
+    @PermissionSuccess(requestCode = 1000)
     public void requestPermissionsSuccess() {
         loadPhoneContact();
     }
 
-    @Override
+    @PermissionSuccess(requestCode = 1000)
     public void requestPermissionsFail() {
         //TODO 请求失败 退出当前界面
         finish();
