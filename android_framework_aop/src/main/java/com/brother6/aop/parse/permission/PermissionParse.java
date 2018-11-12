@@ -26,12 +26,12 @@ public class PermissionParse extends BaseAnnoParse{
         initRequestPermissionValue(obj,field,RequestPermissons.class);
 
         //获取 权限请求成功时的回调方法
-        Method requestSuccessCallbackMethod = getSuccessCallbackMethod(clazz.getMethods(),PermissionSuccess.class);
+        Method requestSuccessCallbackMethod = getSuccessCallbackMethod(clazz,PermissionSuccess.class);
         //设置 权限请求成功的回调方法
         permissionInterface.setSuccessMethod(requestSuccessCallbackMethod);
 
         //获取 权限请求失败的回调方法
-        Method requestFailedCallbackMethod = getFailedCallbackMethod(clazz.getMethods(),PermissionFailed.class);
+        Method requestFailedCallbackMethod = getFailedCallbackMethod(clazz,PermissionFailed.class);
 
         //设置 权限请求失败的回调方法
         permissionInterface.setFailedMethod(requestFailedCallbackMethod);
@@ -62,11 +62,13 @@ public class PermissionParse extends BaseAnnoParse{
 
     /**
      * 检擦使用注解的合法性
-     * @param methods
+     * @param clazz
      * @param requestPermissonsClass
      * @return
      */
-    private Method getSuccessCallbackMethod(Method[] methods, Class<PermissionSuccess> requestPermissonsClass) {
+    private Method getSuccessCallbackMethod(Class clazz, Class<PermissionSuccess> requestPermissonsClass) {
+        //TODO 注意这里只是 查找当前字节码， 实际需要遍历所有字节码
+        Method[] methods = clazz.getMethods();
 
         if (methods == null || methods.length == 0) {
             //TODO 抛出异常
@@ -87,8 +89,9 @@ public class PermissionParse extends BaseAnnoParse{
         return result;
     }
 
-    private Method getFailedCallbackMethod(Method[] methods, Class<PermissionFailed> requestPermissonsClass) {
-
+    private Method getFailedCallbackMethod(Class clazz, Class<PermissionFailed> requestPermissonsClass) {
+        //TODO 注意这里只是 查找当前字节码， 实际需要遍历所有字节码
+        Method[] methods = clazz.getMethods();
         if (methods == null || methods.length == 0) {
             //TODO 抛出异常
             throw new RuntimeException("please check the annotation class ， it don't " +
