@@ -1,11 +1,9 @@
-package com.brother6.aop;
+package com.brother6.aop.business.permission;
  
 import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 
-import com.brother6.aop.PermissionInterface;
-import com.brother6.aop.PermissionUtil;
 import com.brother6.aop.parse.permission.PermissionParse;
 
 /**

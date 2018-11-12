@@ -2,7 +2,7 @@ package com.brother6.aop.parse.permission;
 
 import android.util.Log;
 
-import com.brother6.aop.PermissionInterface;
+import com.brother6.aop.business.permission.PermissionInterface;
 import com.brother6.aop.anotation.permission.PermissionFailed;
 import com.brother6.aop.anotation.permission.PermissionSuccess;
 import com.brother6.aop.anotation.permission.RequestPermissons;
@@ -10,7 +10,7 @@ import com.brother6.aop.anotation.permission.RequestPermissons;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-public class PermissionParse {
+public class PermissionParse extends BaseAnnoParse{
 
     private DefaultPermissionInterface permissionInterface = new DefaultPermissionInterface();
     //TODO 注意 避免内存泄露
@@ -20,52 +20,45 @@ public class PermissionParse {
         this.obj = obj;
         Class clazz = (obj).getClass();
         Field[] fields = clazz.getDeclaredFields();
-        Field field = checkFields(fields, RequestPermissons.class);
-        parseAnno(obj,field,RequestPermissons.class);
+        Field field = getFieldByAnnotation(fields, RequestPermissons.class);
 
-        Method methodRequestSuccess = checkMethods(clazz.getMethods(),PermissionSuccess.class);
-        permissionInterface.setSuccessMethod(methodRequestSuccess);
+        //初始化需要申请的权限的值
+        initRequestPermissionValue(obj,field,RequestPermissons.class);
 
-        Method methodRequestFailed = checkMethods2(clazz.getMethods(),PermissionFailed.class);
-        permissionInterface.setFailedMethod(methodRequestFailed);
+        //获取 权限请求成功时的回调方法
+        Method requestSuccessCallbackMethod = getSuccessCallbackMethod(clazz.getMethods(),PermissionSuccess.class);
+        //设置 权限请求成功的回调方法
+        permissionInterface.setSuccessMethod(requestSuccessCallbackMethod);
+
+        //获取 权限请求失败的回调方法
+        Method requestFailedCallbackMethod = getFailedCallbackMethod(clazz.getMethods(),PermissionFailed.class);
+
+        //设置 权限请求失败的回调方法
+        permissionInterface.setFailedMethod(requestFailedCallbackMethod);
     }
 
     /**
-     * 解析注解中的值
+     *设置请求权限的值
      */
-    public void parseAnno(Object obj, Field field, Class<RequestPermissons> requestPermissonsClass) {
+    public void initRequestPermissionValue(Object obj, Field field, Class<RequestPermissons> requestPermissonsClass) {
         field.setAccessible(true);
         RequestPermissons permissonAnno = field.getAnnotation(requestPermissonsClass);
         permissionInterface.setRequestCode(permissonAnno.requestCode());
         try {
             Object o = field.get(obj);
-            permissionInterface.setPermisstions((String[]) o);
+            if (o instanceof String[]) {
+                permissionInterface.setPermisstions((String[]) o);
+            } else {
+                throw new RuntimeException("please make sure the annotation \"RequestPermissons\" has been" +
+                        "used on the field whose type is String[]");
+            }
+
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
     }
 
-    private Field checkFields(Field[] fields, Class<RequestPermissons> requestPermissonsClass) {
 
-        if (fields == null || fields.length == 0) {
-            //TODO 抛出异常
-            throw new RuntimeException("please check the annotation class ， it don't " +
-                    "has any fields");
-        }
-
-        Field result = null;
-        for (Field field:
-             fields) {
-            if (field.getAnnotation(requestPermissonsClass) != null) {
-                if (result != null) {
-                    throw new RuntimeException("please don't use the anntation" +
-                            "int the sample class");
-                }
-                result = field;
-            }
-        }
-        return result;
-    }
 
     /**
      * 检擦使用注解的合法性
@@ -73,7 +66,7 @@ public class PermissionParse {
      * @param requestPermissonsClass
      * @return
      */
-    private Method checkMethods(Method[] methods, Class<PermissionSuccess> requestPermissonsClass) {
+    private Method getSuccessCallbackMethod(Method[] methods, Class<PermissionSuccess> requestPermissonsClass) {
 
         if (methods == null || methods.length == 0) {
             //TODO 抛出异常
@@ -94,7 +87,7 @@ public class PermissionParse {
         return result;
     }
 
-    private Method checkMethods2(Method[] methods, Class<PermissionFailed> requestPermissonsClass) {
+    private Method getFailedCallbackMethod(Method[] methods, Class<PermissionFailed> requestPermissonsClass) {
 
         if (methods == null || methods.length == 0) {
             //TODO 抛出异常
@@ -106,8 +99,6 @@ public class PermissionParse {
         for (Method method:
                 methods) {
             if (method.getAnnotation(requestPermissonsClass) != null) {
-
-
                 PermissionFailed permissionFailed = method.getAnnotation(requestPermissonsClass);
                 if (permissionFailed.requestCode() == permissionInterface.getRequestCode()) {
                     result = method;
@@ -118,13 +109,24 @@ public class PermissionParse {
     }
 
 
-
+    /**
+     * 请求权限后的回调接口， 通过内部应用的方式实现
+     */
     private class DefaultPermissionInterface implements PermissionInterface {
 
+        /**
+         * 请求码，用来确保 请求的权限和回调是一一对应的
+         */
         private int requestCode;
 
+        /**
+         * 要申请的权限
+         */
         private String[] permisstions;
 
+        /**
+         * 申请权限后，返回的接口 （通过反射执行回去）
+         */
         private Method methodRequestSuccess;
         private Method methodRequestFailed;
 

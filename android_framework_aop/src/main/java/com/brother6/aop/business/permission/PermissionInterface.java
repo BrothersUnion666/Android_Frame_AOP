@@ -1,4 +1,4 @@
-package com.brother6.aop;
+package com.brother6.aop.business.permission;
 
 /**
  * 权限请求接口

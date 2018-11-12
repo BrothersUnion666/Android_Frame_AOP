@@ -11,7 +11,7 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.brother6.android_frame_aop.R;
-import com.brother6.aop.PermissionHelper;
+import com.brother6.aop.business.permission.PermissionHelper;
 import com.brother6.aop.anotation.permission.PermissionSuccess;
 import com.brother6.aop.anotation.permission.RequestPermissons;
 import java.util.ArrayList;
