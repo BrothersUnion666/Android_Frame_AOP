@@ -85,11 +85,10 @@ public class PermissionParse {
         for (Method method:
                 methods) {
             if (method.getAnnotation(requestPermissonsClass) != null) {
-                if (result != null) {
-                    throw new RuntimeException("please don't use the anntation" +
-                            "int the sample class");
+                PermissionSuccess permissionSuccess = method.getAnnotation(requestPermissonsClass);
+                if (permissionSuccess.requestCode() == permissionInterface.getRequestCode()) {
+                    result = method;
                 }
-                result = method;
             }
         }
         return result;
@@ -107,11 +106,12 @@ public class PermissionParse {
         for (Method method:
                 methods) {
             if (method.getAnnotation(requestPermissonsClass) != null) {
-                if (result != null) {
-                    throw new RuntimeException("please don't use the anntation" +
-                            "int the sample class");
+
+
+                PermissionFailed permissionFailed = method.getAnnotation(requestPermissonsClass);
+                if (permissionFailed.requestCode() == permissionInterface.getRequestCode()) {
+                    result = method;
                 }
-                result = method;
             }
         }
         return result;
@@ -176,6 +176,10 @@ public class PermissionParse {
         }
         public void setFailedMethod(Method methodRequestFailed) {
             this.methodRequestFailed = methodRequestFailed;
+        }
+
+        public int getRequestCode() {
+            return requestCode;
         }
     }
 
